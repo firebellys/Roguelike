@@ -1,30 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SalvageGame.Tiles;
 using Microsoft.Xna.Framework;
 
-namespace RLTest
-
+namespace SalvageGame
 {
     // based on tunnelling room generation algorithm
     // from RogueSharp tutorial
     // https://roguesharp.wordpress.com/2016/03/26/roguesharp-v3-tutorial-simple-room-generation/
     public class MapGenerator
     {
+        // Create a random number generator
+        Random randNum = new Random();
+
+        Map _map; // Temporarily store the map currently worked on
+
+
         // empty constructor
         public MapGenerator()
         {
         }
 
-        Map _map; // Temporarily store the map currently worked on
 
         public Map GenerateMap(int mapWidth, int mapHeight, int maxRooms, int minRoomSize, int maxRoomSize)
         {
             // create an empty map of size (mapWidth x mapHeight)
             _map = new Map(mapWidth, mapHeight);
-
-            // Create a random number generator
-            Random randNum = new Random();
 
             // store a list of the rooms created so far
             List<Rectangle> Rooms = new List<Rectangle>();
@@ -62,7 +64,9 @@ namespace RLTest
                 CreateRoom(room);
             }
 
-   for (int r = 1; r < Rooms.Count; r++)
+            // carve out tunnels between all rooms
+            // based on the Positions of their centers
+            for (int r = 1; r < Rooms.Count; r++)
             {
                 //for all remaining rooms get the center of the room and the previous room
                 Point previousRoomCenter = Rooms[r - 1].Center;
@@ -80,26 +84,30 @@ namespace RLTest
                     CreateHorizontalTunnel(previousRoomCenter.X, currentRoomCenter.X, currentRoomCenter.Y);
                 }
             }
+
+            // Create doors now that the tunnels have been carved out
+            foreach (Rectangle room in Rooms)
+            {
+                CreateDoor(room);
+            }
+
             // spit out the final map
             return _map;
         }
-   private void CreateHorizontalTunnel(int xStart, int xEnd, int yPosition)
+
+        // Fills the map with walls
+        private void FloodWalls()
         {
-            for (int x = Math.Min(xStart, xEnd); x <= Math.Max(xStart, xEnd); x++)
+            for (int i = 0; i < _map.Tiles.Length; i++)
             {
-                CreateFloor(new Point(x, yPosition));
+                _map.Tiles[i] = new TileWall();
             }
         }
 
-        // carve a tunnel using the y-axis
-        private void CreateVerticalTunnel(int yStart, int yEnd, int xPosition)
-        {
-            for (int y = Math.Min(yStart, yEnd); y <= Math.Max(yStart, yEnd); y++)
-            {
-                CreateFloor(new Point(xPosition, y));
-            }
-        }
-     
+        // Builds a room composed of walls and floors using the supplied Rectangle
+        // which determines its size and position on the map
+        // Walls are placed at the perimeter of the room
+        // Floors are placed in the interior area of the room
         private void CreateRoom(Rectangle room)
         {
             // Place floors in interior area
@@ -107,7 +115,7 @@ namespace RLTest
             {
                 for (int y = room.Top + 1; y < room.Bottom - 1; y++)
                 {
-                    CreateFloor(new Point(x, y));
+                    CreateFloor(new Point(x,y));
                 }
             }
 
@@ -118,7 +126,8 @@ namespace RLTest
                 CreateWall(location);
             }
         }
-      // Creates a Floor tile at the specified X/Y location
+
+        // Creates a Floor tile at the specified X/Y location
         private void CreateFloor(Point location)
         {
             _map.Tiles[location.ToIndex(_map.Width)] = new TileFloor();
@@ -130,15 +139,8 @@ namespace RLTest
             _map.Tiles[location.ToIndex(_map.Width)] = new TileWall();
         }
 
-        // Fills the map with walls
-        private void FloodWalls()
-        {
-            for (int i = 0; i < _map.Tiles.Length; i++)
-            {
-                _map.Tiles[i] = new TileWall();
-            }
-        }
-     private List<Point> GetBorderCellLocations(Rectangle room)
+        // Returns a list of points expressing the perimeter of a rectangle
+        private List<Point> GetBorderCellLocations(Rectangle room)
         {
             //establish room boundaries
             int xMin = room.Left;
@@ -155,6 +157,98 @@ namespace RLTest
 
             return borderCells;
         }
+
+        // carve a tunnel out of the map parallel to the x-axis
+        private void CreateHorizontalTunnel(int xStart, int xEnd, int yPosition)
+        {
+            for (int x = Math.Min(xStart, xEnd); x <= Math.Max(xStart, xEnd); x++)
+            {
+                CreateFloor(new Point(x, yPosition));
+            }
+        }
+
+        // carve a tunnel using the y-axis
+        private void CreateVerticalTunnel(int yStart, int yEnd, int xPosition)
+        {
+            for (int y = Math.Min(yStart, yEnd); y <= Math.Max(yStart, yEnd); y++)
+            {
+                CreateFloor(new Point(xPosition, y));
+            }
+        }
+
+        //Tries to create a TileDoor object in a specified Rectangle
+        //perimeter. Reads through the entire list of tiles comprising
+        //the perimeter, and determines if each position is a viable
+        //candidate for a door.
+        //When it finds a potential position, creates a closed and
+        //unlocked door.
+        private void CreateDoor(Rectangle room)
+        {
+            List<Point> borderCells = GetBorderCellLocations(room);
+
+            //go through every border cell and look for potential door candidates
+            foreach (Point location in borderCells)
+            {
+                int locationIndex = location.ToIndex(_map.Width);
+                if (IsPotentialDoor(location))
+                {
+                    // Create a new door that is closed and unlocked.
+                    TileDoor newDoor = new TileDoor(false, false);
+                    _map.Tiles[locationIndex] = newDoor;
+
+                }
+            }
+        }
+
+        // Determines if a Point on the map is a good
+        // candidate for a door.
+        // Returns true if it's a good spot for a door
+        // Returns false if there is a Tile that IsBlockingMove=true
+        // at that location
+        private bool IsPotentialDoor(Point location)
+        {
+            //if the target location is not walkable
+            //then it's a wall and not a good place for a door
+            int locationIndex = location.ToIndex(_map.Width);
+            if (_map.Tiles[locationIndex] != null && _map.Tiles[locationIndex] is TileWall)
+            {
+                return false;
+            }
+
+            //store references to all neighbouring cells
+            Point right = new Point(location.X + 1, location.Y);
+            Point left = new Point(location.X - 1, location.Y);
+            Point top = new Point(location.X, location.Y - 1);
+            Point bottom = new Point(location.X, location.Y + 1);
+
+            // check to see if there is a door already in the target
+            // location, or above/below/right/left of the target location
+            // If it detects a door there, return false.
+            if (_map.GetTileAt<TileDoor>(location.X, location.Y) != null ||
+                _map.GetTileAt<TileDoor>(right.X, right.Y) != null ||
+                _map.GetTileAt<TileDoor>(left.X, left.Y) != null ||
+                _map.GetTileAt<TileDoor>(top.X, top.Y) != null ||
+                _map.GetTileAt<TileDoor>(bottom.X, bottom.Y) != null
+               )
+            {
+                return false;
+            }
+
+            //if all the prior checks are okay, place on left or right side of room
+            if (!_map.Tiles[right.ToIndex(_map.Width)].IsBlockingMove && !_map.Tiles[left.ToIndex(_map.Width)].IsBlockingMove && _map.Tiles[top.ToIndex(_map.Width)].IsBlockingMove && _map.Tiles[bottom.ToIndex(_map.Width)].IsBlockingMove)
+            {
+                return true;
+            }
+            //if this is a good place for a door at the top or bottom
+            if (_map.Tiles[right.ToIndex(_map.Width)].IsBlockingMove && _map.Tiles[left.ToIndex(_map.Width)].IsBlockingMove && !_map.Tiles[top.ToIndex(_map.Width)].IsBlockingMove && !_map.Tiles[bottom.ToIndex(_map.Width)].IsBlockingMove)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        // returns a collection of Points which represent
+        // locations along a line
         public IEnumerable<Point> GetTileLocationsAlongLine(int xOrigin, int yOrigin, int xDestination, int yDestination)
         {
             // prevent line from overflowing
@@ -193,7 +287,9 @@ namespace RLTest
             }
         }
 
-   private int ClampX(int x)
+        // sets X coordinate between right and left edges of map
+        // to prevent any out-of-bounds errors
+        private int ClampX(int x)
         {
             if (x < 0)
                 x = 0;
