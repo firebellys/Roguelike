@@ -100,7 +100,7 @@ namespace SalvageGame
         {
             for (int i = 0; i < _map.Tiles.Length; i++)
             {
-                _map.Tiles[i] = new TileWall();
+                _map.Tiles[i] = new TileWallSolid();
             }
         }
 
@@ -164,6 +164,7 @@ namespace SalvageGame
             for (int x = Math.Min(xStart, xEnd); x <= Math.Max(xStart, xEnd); x++)
             {
                 CreateFloor(new Point(x, yPosition));
+                // TODO: Add code to make tunnel walls
             }
         }
 
@@ -193,7 +194,7 @@ namespace SalvageGame
                 if (IsPotentialDoor(location))
                 {
                     // Create a new door that is closed and unlocked.
-                    TileDoor newDoor = new TileDoor(false, false);
+                    TileDoor newDoor = new TileDoor(false, true);
                     _map.Tiles[locationIndex] = newDoor;
 
                 }

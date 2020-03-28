@@ -15,12 +15,12 @@ namespace SalvageGame
         Random rndNum = new Random();
 
         // map creation and storage data
-        private int _mapWidth = 100;
-        private int _mapHeight = 100;
+        private int _mapWidth = 300;
+        private int _mapHeight = 300;
         private TileBase[] _mapTiles;
         private int _maxRooms = 100;
-        private int _minRoomSize = 4;
-        private int _maxRoomSize = 15;
+        private int _minRoomSize = 6;
+        private int _maxRoomSize = 25;
         public Map CurrentMap { get; set; }
 
         // player data

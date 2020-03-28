@@ -34,3 +34,13 @@ G:\Dropbox\Games\RLTest\RLTest\bin\DesktopGL\AnyCPU\Debug\Newtonsoft.Json.dll
 G:\Dropbox\Games\RLTest\RLTest\bin\DesktopGL\AnyCPU\Debug\SadConsole.dll
 G:\Dropbox\Games\RLTest\RLTest\bin\DesktopGL\AnyCPU\Debug\Newtonsoft.Json.xml
 G:\Dropbox\Games\RLTest\RLTest\bin\DesktopGL\AnyCPU\Debug\SadConsole.xml
+G:\Dropbox\Games\RLTest\RLTest\bin\DesktopGL\AnyCPU\Debug\GoRogue.dll
+G:\Dropbox\Games\RLTest\RLTest\bin\DesktopGL\AnyCPU\Debug\Priority Queue.dll
+G:\Dropbox\Games\RLTest\RLTest\bin\DesktopGL\AnyCPU\Debug\Troschuetz.Random.dll
+G:\Dropbox\Games\RLTest\RLTest\bin\DesktopGL\AnyCPU\Debug\GoRogue.xml
+G:\Dropbox\Games\RLTest\RLTest\bin\DesktopGL\AnyCPU\Debug\Priority Queue.pdb
+G:\Dropbox\Games\RLTest\RLTest\bin\DesktopGL\AnyCPU\Debug\Priority Queue.xml
+G:\Dropbox\Games\RLTest\RLTest\bin\DesktopGL\AnyCPU\Debug\Troschuetz.Random.pdb
+G:\Dropbox\Games\RLTest\RLTest\bin\DesktopGL\AnyCPU\Debug\Troschuetz.Random.xml
+G:\Dropbox\Games\RLTest\RLTest\bin\DesktopGL\AnyCPU\Debug\Yayo_c64.png
+G:\Dropbox\Games\RLTest\RLTest\bin\DesktopGL\AnyCPU\Debug\c64.font

@@ -24,7 +24,7 @@ namespace SalvageGame
         static void Main(string[] args)
         {
             // Setup the engine and create the main window.
-            SadConsole.Game.Create("IBM.font", GameWidth, GameHeight);
+            SadConsole.Game.Create("c64.font", GameWidth, GameHeight);
 
             // Hook the start event so we can add consoles to the system.
             SadConsole.Game.OnInitialize = Init;
